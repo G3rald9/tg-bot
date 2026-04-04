@@ -11,5 +11,5 @@ running = True
 
 while running:
     bot.send_message(chat_id=CHAT_ID, text="Running...")
-    time.sleep(3600)
+    time.sleep(3)
 
