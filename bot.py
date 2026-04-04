@@ -18,7 +18,7 @@ async def main():
         await bot.send_message(chat_id=CHAT_ID, text="Running...")
         
         # Use asyncio.sleep instead of time.sleep in async functions
-        await asyncio.sleep(3)
+        await asyncio.sleep(3600)
 
 if __name__ == "__main__":
     # This starts the asynchronous event loop
