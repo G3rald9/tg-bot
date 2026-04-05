@@ -1,32 +1,26 @@
-import requests
 import os
-from telegram import Bot
 import asyncio
+import httpx
+from telegram import Bot
 
-#credentials
-
-
-TOKEN = os.getenv("BOT_TOKEN")
-CHAT_ID = os.getenv("CHAT_ID")
+TOKEN, CHAT_ID = os.getenv("BOT_TOKEN"), os.getenv("CHAT_ID")
 WALLET = "7s8Bdc4cdLfusLmCKjQfsGN3k6hFjn8GQ21h2x4nvBq"
-
 bot = Bot(token=TOKEN)
-last_tx = None
 
 async def main():
-    global last_tx
-
-    while True:
-        url = f"https://public-api.solscan.io/account/transactions?address={WALLET}&limit=1"
-        data = requests.get(url).json()
-
-        if data:
-            tx = data[0]['txHash']
-
-            if tx != last_tx:
-                last_tx = tx
-                await bot.send_message(chat_id=CHAT_ID, text="New transaction detected!")
-
-        await asyncio.sleep(10)
+    last_tx = None
+    async with httpx.AsyncClient() as client:
+        while True:
+            try:
+                r = await client.get(f"https://public-api.solscan.io/account/transactions?address={WALLET}&limit=1")
+                data = r.json()
+                
+                if data and data[0]['txHash'] != last_tx:
+                    last_tx = data[0]['txHash']
+                    await bot.send_message(CHAT_ID, "New transaction detected!")
+            except Exception as e:
+                print(f"Error: {e}") # This prevents the crash
+            
+            await asyncio.sleep(20) 
 
 asyncio.run(main())
