@@ -7,7 +7,7 @@ import asyncio
 
 TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
-WALLET = "YOUR_WALLET_ADDRESS"
+WALLET = "7s8Bdc4cdLfusLmCKjQfsGN3k6hFjn8GQ21h2x4nvBq"
 
 bot = Bot(token=TOKEN)
 last_tx = None
