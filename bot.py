@@ -29,7 +29,7 @@ async def main():
                     
                     if current_tx != last_tx:
                         if last_tx is not None:
-                            await bot.send_message(CHAT_ID, f"New Transaction from : {WALLET")
+                            await bot.send_message(CHAT_ID, f"New Transaction from : {WALLET}")
                         last_tx = current_tx
             except Exception as e:
                 print(f"Connection Error: {e}")
