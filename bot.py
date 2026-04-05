@@ -1,25 +1,31 @@
+import requests
 import os
-import asyncio
 from telegram import Bot
+import asyncio
 
-# credentials
+#credentials
+
 TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
+WALLET = "YOUR_WALLET_ADDRESS"
 
-# Initialize bot
 bot = Bot(token=TOKEN)
+last_tx = None
 
 async def main():
-    running = True
-    print("Starting loop...")
-    
-    while running:
-    
-        await bot.send_message(chat_id=CHAT_ID, text="Running...")
-        
-    
-        await asyncio.sleep(3600)
+    global last_tx
 
-if __name__ == "__main__":
-    #Asynchronous  loop
-    asyncio.run(main())
+    while True:
+        url = f"https://public-api.solscan.io/account/transactions?address={WALLET}&limit=1"
+        data = requests.get(url).json()
+
+        if data:
+            tx = data[0]['txHash']
+
+            if tx != last_tx:
+                last_tx = tx
+                await bot.send_message(chat_id=CHAT_ID, text="New transaction detected!")
+
+        await asyncio.sleep(10)
+
+asyncio.run(main())
