@@ -1,26 +1,39 @@
-import os
-import asyncio
-import httpx
+import os, asyncio, httpx
 from telegram import Bot
 
 TOKEN, CHAT_ID = os.getenv("BOT_TOKEN"), os.getenv("CHAT_ID")
 WALLET = "7s8Bdc4cdLfusLmCKjQfsGN3k6hFjn8GQ21h2x4nvBq"
+#
+RPC_URL = "https://api.mainnet-beta.solana.com"
+
 bot = Bot(token=TOKEN)
 
 async def main():
     last_tx = None
+    payload = {
+        "jsonrpc": "2.0", "id": 1,
+        "method": "getSignaturesForAddress",
+        "params": [WALLET, {"limit": 1}]
+    }
+
     async with httpx.AsyncClient() as client:
+        print("Monitoring via Direct RPC...")
         while True:
             try:
-                r = await client.get(f"https://public-api.solscan.io/account/transactions?address={WALLET}&limit=1")
-                data = r.json()
+                response = await client.post(RPC_URL, json=payload)
+                data = response.json()
                 
-                if data and data[0]['txHash'] != last_tx:
-                    last_tx = data[0]['txHash']
-                    await bot.send_message(CHAT_ID, "New transaction detected!")
+                # Solana RPC returns data in a 'result' list
+                if "result" in data and len(data["result"]) > 0:
+                    current_tx = data["result"][0]["signature"]
+                    
+                    if current_tx != last_tx:
+                        if last_tx is not None:
+                            await bot.send_message(CHAT_ID, f"New Tx: https://solscan.io/tx/{current_tx}")
+                        last_tx = current_tx
             except Exception as e:
-                print(f"Error: {e}") # This prevents the crash
+                print(f"Connection Error: {e}")
             
-            await asyncio.sleep(20) 
+            await asyncio.sleep(15) 
 
 asyncio.run(main())
